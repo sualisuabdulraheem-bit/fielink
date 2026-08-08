@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Admin Dashboard — FieLink</title>
+<meta name="robots" content="noindex,nofollow"/>
+<link rel="icon" href="data:,"/>
+<link rel="stylesheet" href="/css/style.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
+<style>
+  body { background: var(--off); }
+  .admin-nav { background: var(--navy); padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; }
+  .admin-tabs { display: flex; gap: 6px; margin: 20px 0; flex-wrap: wrap; }
+  .admin-tab { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; border: 1px solid var(--lgray); background: #fff; color: var(--text2); cursor: pointer; }
+  .admin-tab.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .admin-panel { display: none; }
+  .admin-panel.active { display: block; }
+  table.admin-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--lgray); }
+  table.admin-table th { text-align: left; padding: 10px 14px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--mgray); border-bottom: 1px solid var(--lgray); background: var(--off); }
+  table.admin-table td { padding: 12px 14px; border-bottom: 1px solid var(--lgray); font-size: 13px; vertical-align: middle; }
+  table.admin-table tr:last-child td { border-bottom: none; }
+  .status-pill { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .status-draft { background: var(--warnlt); color: var(--warn); }
+  .status-published { background: var(--emlt); color: var(--em); }
+  .vprog { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; }
+  .vprog-bar { width: 60px; height: 5px; background: var(--lgray); border-radius: 3px; overflow: hidden; }
+  .vprog-fill { height: 100%; background: var(--em); }
+  .form-card { background: #fff; border: 1px solid var(--lgray); border-radius: var(--radius); padding: 24px; max-width: 640px; }
+  .form-row { margin-bottom: 14px; }
+  .form-row label { display: block; font-size: 13px; font-weight: 500; color: var(--text2); margin-bottom: 6px; }
+  .form-row input, .form-row select, .form-row textarea { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--lgray); font-family: inherit; }
+  .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .checklist-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--lgray); }
+  .checklist-item:last-child { border-bottom: none; }
+  .checklist-item input[type=checkbox] { width: 18px; height: 18px; }
+  .photo-thumb { width: 64px; height: 64px; object-fit: cover; border-radius: 6px; margin: 3px; }
+</style>
+</head>
+<body>
+
+<div class="admin-nav">
+  <div class="nav-logo" style="color:#fff">Fie<span style="color:#4ADE80">Link</span> <span style="font-size:13px;color:var(--softg);font-family:'Outfit',sans-serif">Admin</span></div>
+  <div style="display:flex;gap:10px">
+    <a href="/" class="btn btn-outline btn-sm" style="border-color:rgba(255,255,255,.3);color:#fff">View site</a>
+    <button class="btn btn-sm" style="background:var(--danger);color:#fff" onclick="doLogout()">Log out</button>
+  </div>
+</div>
+
+<div class="container" style="padding-top:24px;padding-bottom:60px">
+
+  <div class="admin-tabs">
+    <button class="admin-tab active" data-tab="listings" onclick="switchTab('listings',this)">Listings</button>
+    <button class="admin-tab" data-tab="new" onclick="switchTab('new',this)">+ New listing</button>
+    <button class="admin-tab" data-tab="leads" onclick="switchTab('leads',this)">Leads <span id="leads-count" class="badge-pill" style="background:var(--em);color:#fff;margin-left:4px"></span></button>
+    <button class="admin-tab" data-tab="reports" onclick="switchTab('reports',this)">Reports <span id="reports-count" class="badge-pill" style="background:var(--danger);color:#fff;margin-left:4px"></span></button>
+  </div>
+
+  <!-- LISTINGS -->
+  <div class="admin-panel active" id="panel-listings">
+    <table class="admin-table">
+      <thead><tr><th>Title</th><th>Area</th><th>Price</th><th>Verification</th><th>Status</th><th>Photos</th><th>Actions</th></tr></thead>
+      <tbody id="listings-tbody"><tr><td colspan="7" class="text-muted center" style="padding:30px">Loading…</td></tr></tbody>
+    </table>
+  </div>
+
+  <!-- NEW LISTING -->
+  <div class="admin-panel" id="panel-new">
+    <div class="form-card">
+      <h3 style="font-size:18px;margin-bottom:16px">Add a new listing</h3>
+      <form id="new-listing-form" onsubmit="return createListing(event)">
+        <div class="form-row"><label>Title *</label><input type="text" id="f-title" required placeholder="e.g. 2-Bedroom Apartment, Spintex"/></div>
+        <div class="form-grid-2">
+          <div class="form-row"><label>Property type *</label>
+            <select id="f-type" required>
+              <option value="Self-contained">Self-contained</option>
+              <option value="1-bedroom apartment">1-bedroom apartment</option>
+              <option value="2-bedroom apartment" selected>2-bedroom apartment</option>
+              <option value="3-bedroom house">3-bedroom house</option>
+              <option value="Luxury apartment">Luxury apartment</option>
+            </select>
+          </div>
+          <div class="form-row"><label>City *</label>
+            <select id="f-city" required><option value="Accra">Accra</option><option value="Kumasi">Kumasi</option></select>
+          </div>
+        </div>
+        <div class="form-grid-2">
+          <div class="form-row"><label>Area / neighbourhood *</label><input type="text" id="f-area" required placeholder="e.g. Spintex"/></div>
+          <div class="form-row"><label>Price (GH₵/month) *</label><input type="number" id="f-price" required placeholder="e.g. 3500"/></div>
+        </div>
+        <div class="form-grid-2">
+          <div class="form-row"><label>Bedrooms</label><input type="number" id="f-bedrooms" value="2" min="0"/></div>
+          <div class="form-row"><label>Bathrooms</label><input type="number" id="f-bathrooms" value="1" min="0"/></div>
+        </div>
+        <div class="form-row"><label>Description</label><textarea id="f-description" rows="3"></textarea></div>
+        <div class="form-grid-2">
+          <div class="form-row"><label>Landlord name</label><input type="text" id="f-landlord-name"/></div>
+          <div class="form-row"><label>Landlord WhatsApp (233...)</label><input type="text" id="f-landlord-whatsapp" placeholder="233241234567"/></div>
+        </div>
+        <div class="form-row">
+          <label><input type="checkbox" id="f-diaspora" style="width:auto;margin-right:8px"/>Mark as diaspora-ready (remote viewing available)</label>
+        </div>
+        <div class="form-row">
+          <label>Photos (minimum 8 required to publish — FieLink standard)</label>
+          <input type="file" id="f-photos" multiple accept="image/jpeg,image/png,image/webp"/>
+          <div id="photo-count" class="text-muted" style="font-size:12px;margin-top:4px">0 photos selected</div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Create listing (as draft)</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- LEADS -->
+  <div class="admin-panel" id="panel-leads">
+    <table class="admin-table">
+      <thead><tr><th>Name</th><th>WhatsApp</th><th>Type</th><th>Date</th></tr></thead>
+      <tbody id="leads-tbody"><tr><td colspan="4" class="text-muted center" style="padding:30px">Loading…</td></tr></tbody>
+    </table>
+  </div>
+
+  <!-- REPORTS -->
+  <div class="admin-panel" id="panel-reports">
+    <table class="admin-table">
+      <thead><tr><th>Reason</th><th>Listing</th><th>Details</th><th>Contact</th><th>Status</th><th>Date</th></tr></thead>
+      <tbody id="reports-tbody"><tr><td colspan="6" class="text-muted center" style="padding:30px">Loading…</td></tr></tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- VERIFICATION MODAL -->
+<div class="modal-overlay" id="verify-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeVerifyModal()">&times;</button>
+    <h3 style="font-size:17px;margin-bottom:4px">Verification checklist</h3>
+    <p class="text-muted" style="font-size:13px;margin-bottom:16px">All six must be checked before this listing can go live. This is enforced by the server, not just this screen.</p>
+    <div id="checklist-body"></div>
+    <div id="verify-status" style="margin-top:14px;font-size:12px"></div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button class="btn btn-outline btn-block" onclick="closeVerifyModal()">Close</button>
+      <button class="btn btn-primary btn-block" id="publish-btn" onclick="tryPublish()">Publish listing</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="/js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+[
+  {
+    "id": "sample-1",
+    "title": "2-Bedroom Apartment, East Legon",
+    "type": "2-bedroom apartment",
+    "area": "East Legon",
+    "city": "Accra",
+    "price": 3500,
+    "currency": "GHS",
+    "period": "month",
+    "bedrooms": 2,
+    "bathrooms": 2,
+    "description": "SAMPLE LISTING — replace with real verified properties from the admin dashboard. This is here so you can see how listings render.",
+    "photos": [],
+    "diasporaReady": true,
+    "landlordName": "Sample Landlord",
+    "landlordWhatsapp": "233000000000",
+    "verification": {
+      "physicalVisit": false,
+      "originalPhotos": false,
+      "idVerified": false,
+      "ownershipDocs": false,
+      "contactConfirmed": false,
+      "availabilityChecked": false,
+      "verifiedDate": null,
+      "verifiedBy": null
+    },
+    "status": "draft",
+    "createdAt": "2026-07-01T00:00:00.000Z",
+    "updatedAt": "2026-07-01T00:00:00.000Z"
+  }
+]

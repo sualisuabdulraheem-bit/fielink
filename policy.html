@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>FieLink — Platform Policy & Verification Disclaimer</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0C2218;
+  --navy2:#1A3A2A;
+  --emerald:#2D7A3A;
+  --emerald2:#3A9447;
+  --emerald-light:#E8F5EF;
+  --gold:#C9A84C;
+  --beige:#FAF8F4;
+  --offwhite:#F4F2EE;
+  --gray:#8A8F99;
+  --lgray:#E8E9ED;
+  --white:#FFFFFF;
+  --text:#0C2218;
+  --text2:#4A5568;
+  --radius:12px;
+}
+body{font-family:'Outfit',sans-serif;background:var(--beige);color:var(--text);line-height:1.7;font-size:16px}
+.page{max-width:820px;margin:0 auto;padding:48px 24px 80px}
+
+/* Header */
+.doc-header{background:var(--navy);color:#fff;border-radius:16px;padding:40px 48px;margin-bottom:40px}
+.doc-logo{font-family:'DM Serif Display',serif;font-size:28px;color:#fff;margin-bottom:4px}
+.doc-logo span{color:#4ADE80}
+.doc-tagline{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,0.45);margin-bottom:20px}
+.doc-title{font-family:'DM Serif Display',serif;font-size:clamp(22px,3vw,30px);color:#fff;margin-bottom:8px;line-height:1.25}
+.doc-meta{font-size:13px;color:rgba(255,255,255,0.5)}
+.doc-meta strong{color:rgba(255,255,255,0.75)}
+
+/* Nav */
+.toc{background:var(--white);border:1px solid var(--lgray);border-radius:var(--radius);padding:24px 28px;margin-bottom:36px}
+.toc-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--gray);margin-bottom:12px}
+.toc-list{list-style:none;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:4px}
+.toc-list li a{font-size:14px;color:var(--emerald);text-decoration:none;padding:4px 0;display:block}
+.toc-list li a:hover{text-decoration:underline}
+
+/* Alert box */
+.alert-critical{background:#FFF4E5;border-left:4px solid var(--gold);border-radius:0 var(--radius) var(--radius) 0;padding:18px 22px;margin-bottom:32px}
+.alert-critical p{font-size:13px;color:#7A5700;line-height:1.6}
+.alert-critical strong{color:#5A3E00}
+
+/* Sections */
+.section{margin-bottom:48px}
+.section-number{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--emerald);margin-bottom:6px}
+h2.section-head{font-family:'DM Serif Display',serif;font-size:22px;color:var(--navy);margin-bottom:6px;line-height:1.3}
+.section-intro{font-size:14px;color:var(--gray);margin-bottom:20px;font-style:italic}
+.divider{height:1px;background:var(--lgray);margin-bottom:28px}
+
+/* Body text */
+p{font-size:15px;color:var(--text2);margin-bottom:14px;line-height:1.75}
+p:last-child{margin-bottom:0}
+strong{color:var(--navy);font-weight:600}
+
+/* Clause blocks */
+.clause{background:var(--white);border:1px solid var(--lgray);border-radius:var(--radius);padding:20px 24px;margin-bottom:14px}
+.clause-head{font-size:14px;font-weight:600;color:var(--navy);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.clause-num{display:inline-block;width:22px;height:22px;background:var(--emerald-light);border-radius:50%;font-size:11px;font-weight:700;color:var(--emerald);text-align:center;line-height:22px;flex-shrink:0}
+.clause p{font-size:14px;color:var(--text2);margin-bottom:0}
+
+/* Warning clause */
+.clause.warn{border-color:#F0C080;background:#FFFBF0}
+.clause.warn .clause-head{color:#7A5700}
+.clause.warn .clause-num{background:#FFF0C8;color:#7A5700}
+.clause.warn p{color:#7A5700}
+
+/* Verification steps */
+.verify-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:14px}
+.verify-card{background:var(--white);border:1px solid var(--lgray);border-radius:var(--radius);padding:16px 18px}
+.verify-icon{width:36px;height:36px;background:var(--emerald-light);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;font-size:18px}
+.verify-label{font-size:13px;font-weight:600;color:var(--navy);margin-bottom:4px}
+.verify-desc{font-size:12px;color:var(--gray);line-height:1.5}
+
+/* Badge pill */
+.badge{display:inline-block;padding:4px 12px;border-radius:100px;font-size:12px;font-weight:600}
+.badge-green{background:var(--emerald-light);color:var(--emerald)}
+.badge-gold{background:#FFF5D6;color:#7A5700}
+.badge-red{background:#FFF0F0;color:#C0392B}
+
+/* Definition table */
+.def-table{width:100%;border-collapse:collapse;margin-bottom:14px}
+.def-table tr{border-bottom:1px solid var(--lgray)}
+.def-table tr:last-child{border-bottom:none}
+.def-table td{padding:10px 14px;font-size:14px;vertical-align:top}
+.def-table td:first-child{font-weight:600;color:var(--navy);white-space:nowrap;width:160px}
+.def-table td:last-child{color:var(--text2)}
+
+/* Dispute process */
+.step-list{counter-reset:steps;list-style:none;margin-bottom:14px}
+.step-list li{counter-increment:steps;display:flex;gap:14px;margin-bottom:12px;align-items:flex-start}
+.step-list li::before{content:counter(steps);display:inline-flex;width:26px;height:26px;min-width:26px;background:var(--navy);color:#fff;border-radius:50%;font-size:12px;font-weight:700;align-items:center;justify-content:center}
+.step-list li p{margin-bottom:0;font-size:14px;padding-top:3px}
+
+/* Contact block */
+.contact-block{background:var(--navy);color:#fff;border-radius:var(--radius);padding:28px 32px}
+.contact-block h3{font-family:'DM Serif Display',serif;font-size:18px;color:#fff;margin-bottom:12px}
+.contact-block p{font-size:14px;color:rgba(255,255,255,0.7);margin-bottom:6px}
+.contact-block a{color:#4ADE80}
+
+/* Footer */
+.doc-footer{margin-top:48px;padding-top:24px;border-top:1px solid var(--lgray);font-size:12px;color:var(--gray);line-height:1.7}
+
+@media(max-width:600px){
+  .doc-header{padding:28px 24px}
+  .toc-list{grid-template-columns:1fr}
+  .verify-grid{grid-template-columns:1fr}
+  .def-table td:first-child{width:120px}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Document Header -->
+  <div class="doc-header">
+    <div class="doc-logo">Fie<span>Link</span></div>
+    <div class="doc-tagline">Trusted Homes. Real Connections.</div>
+    <h1 class="doc-title">Platform Policy, Verification Disclaimer &amp; User Agreement</h1>
+    <p class="doc-meta">
+      <strong>Effective date:</strong> [INSERT DATE] &nbsp;|&nbsp;
+      <strong>Version:</strong> 1.0 &nbsp;|&nbsp;
+      <strong>Governing law:</strong> Republic of Ghana &nbsp;|&nbsp;
+      <strong>Jurisdiction:</strong> Accra, Ghana
+    </p>
+  </div>
+
+  <!-- Important notice -->
+  <div class="alert-critical">
+    <p><strong>Important notice before you read:</strong> FieLink is a property listing and connection platform. We are not a real estate agent, legal advisor, property manager, or guarantor of any transaction. This document explains exactly what our verification process covers, its limitations, and your rights and responsibilities as a user. Please read Section 3 (Verification Disclaimer) carefully before relying on any listing.</p>
+  </div>
+
+  <!-- Table of Contents -->
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ul class="toc-list">
+      <li><a href="#s1">1. Definitions</a></li>
+      <li><a href="#s2">2. Who we are</a></li>
+      <li><a href="#s3">3. What "FieLink Verified" means</a></li>
+      <li><a href="#s4">4. Platform liability disclaimer</a></li>
+      <li><a href="#s5">5. Property seeker responsibilities</a></li>
+      <li><a href="#s6">6. Landlord &amp; agent responsibilities</a></li>
+      <li><a href="#s7">7. Prohibited conduct</a></li>
+      <li><a href="#s8">8. Data collection &amp; privacy</a></li>
+      <li><a href="#s9">9. Dispute &amp; complaints process</a></li>
+      <li><a href="#s10">10. Changes to this policy</a></li>
+      <li><a href="#s11">11. Contact us</a></li>
+    </ul>
+  </div>
+
+  <!-- Section 1 -->
+  <div class="section" id="s1">
+    <div class="section-number">Section 1</div>
+    <h2 class="section-head">Definitions</h2>
+    <div class="divider"></div>
+    <p>In this policy, the following terms have the meanings given below.</p>
+    <div style="background:var(--white);border:1px solid var(--lgray);border-radius:var(--radius);overflow:hidden">
+      <table class="def-table">
+        <tr><td>"FieLink", "we", "us", "our"</td><td>FieLink, a property technology platform registered in Ghana, and its authorised representatives.</td></tr>
+        <tr><td>"Platform"</td><td>The FieLink website, WhatsApp broadcast service, and any related tools operated by FieLink.</td></tr>
+        <tr><td>"User"</td><td>Any person who accesses the Platform, whether as a property seeker, landlord, agent, or visitor.</td></tr>
+        <tr><td>"Property Seeker"</td><td>A user searching for a property to rent or buy via the Platform.</td></tr>
+        <tr><td>"Landlord / Agent"</td><td>A user who lists one or more properties on the Platform for rent or sale.</td></tr>
+        <tr><td>"Listing"</td><td>A property entry published on the Platform, including photos, description, price, and contact details.</td></tr>
+        <tr><td>"FieLink Verified" / "Verified Badge"</td><td>A label applied to a Listing after FieLink has completed its verification checks as described in Section 3.</td></tr>
+        <tr><td>"Transaction"</td><td>Any rental agreement, payment, or property deal entered into between a Property Seeker and a Landlord/Agent. FieLink is not a party to any Transaction.</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Section 2 -->
+  <div class="section" id="s2">
+    <div class="section-number">Section 2</div>
+    <h2 class="section-head">Who we are</h2>
+    <div class="divider"></div>
+    <p>FieLink is a Ghana-based property technology platform whose purpose is to connect property seekers with verified landlords and agents. We operate as a <strong>marketplace and information platform only</strong>. We do not own, manage, inspect on behalf of tenants, or guarantee the condition of any property listed on our Platform.</p>
+    <p>FieLink is registered with the Registrar General's Department of Ghana and complies with the Data Protection Act, 2012 (Act 843) of Ghana, including registration with the Data Protection Commission. Our DPC registration number is: <strong>[INSERT DPC REGISTRATION NUMBER]</strong>.</p>
+  </div>
+
+  <!-- Section 3 -->
+  <div class="section" id="s3">
+    <div class="section-number">Section 3</div>
+    <h2 class="section-head">What "FieLink Verified" means — and what it does not</h2>
+    <div class="section-intro">This is the most important section in this document. Read it fully.</div>
+    <div class="divider"></div>
+
+    <p>When you see the <span class="badge badge-green">✓ FieLink Verified</span> badge on a listing, it means a FieLink representative has completed all of the following checks at the time of verification:</p>
+
+    <div class="verify-grid">
+      <div class="verify-card">
+        <div class="verify-icon">🏠</div>
+        <div class="verify-label">Physical site visit</div>
+        <div class="verify-desc">A FieLink representative visited the property in person before the listing was published.</div>
+      </div>
+      <div class="verify-card">
+        <div class="verify-icon">📸</div>
+        <div class="verify-label">Original photos</div>
+        <div class="verify-desc">All photos were taken on-site by FieLink. No stock images or photos from other listings are used.</div>
+      </div>
+      <div class="verify-card">
+        <div class="verify-icon">🪪</div>
+        <div class="verify-label">Landlord identity check</div>
+        <div class="verify-desc">The landlord or authorised agent presented a valid Ghana Card or passport, which was recorded by FieLink.</div>
+      </div>
+      <div class="verify-card">
+        <div class="verify-icon">📄</div>
+        <div class="verify-label">Ownership or authority docs</div>
+        <div class="verify-desc">The landlord provided a title deed, lease agreement, or written authorisation confirming their right to let the property.</div>
+      </div>
+      <div class="verify-card">
+        <div class="verify-icon">📱</div>
+        <div class="verify-label">Contact confirmation</div>
+        <div class="verify-desc">The listed phone number was confirmed as active and reachable by WhatsApp at the time of verification.</div>
+      </div>
+      <div class="verify-card">
+        <div class="verify-icon">🔄</div>
+        <div class="verify-label">Availability monitoring</div>
+        <div class="verify-desc">FieLink makes reasonable efforts to remove listings within 24 hours of being informed a property is no longer available.</div>
+      </div>
+    </div>
+
+    <p><strong>What the Verified badge does not guarantee:</strong></p>
+
+    <div class="clause warn">
+      <div class="clause-head"><span class="clause-num">!</span> The Verified badge is a snapshot, not a guarantee</div>
+      <p>Our verification is conducted at a specific point in time. Property conditions, availability, price, terms, and ownership can change after verification. The badge confirms what we found on the date of our visit — it does not guarantee the same conditions will exist when you view or rent the property.</p>
+    </div>
+
+    <div class="clause warn">
+      <div class="clause-head"><span class="clause-num">!</span> We are not legal advisors on title</div>
+      <p>We review the documents presented to us in good faith. We are not a land registry, a court, or a legal authority. We cannot guarantee that a title deed is free from disputes, encumbrances, or competing claims. For any property purchase, you should independently engage a licensed Ghanaian solicitor to conduct a full title search.</p>
+    </div>
+
+    <div class="clause warn">
+      <div class="clause-head"><span class="clause-num">!</span> We do not guarantee the landlord's conduct</div>
+      <p>Verifying a landlord's identity does not make FieLink responsible for their behaviour during or after a tenancy. If a landlord misrepresents terms, withholds a deposit unlawfully, or breaches a rental agreement, FieLink is not liable for that conduct. Our dispute process (Section 9) is available to report misconduct.</p>
+    </div>
+
+    <div class="clause warn">
+      <div class="clause-head"><span class="clause-num">!</span> Unverified listings are clearly labelled</div>
+      <p>Some listings on the Platform may not carry the Verified badge. These are listed for information purposes only. FieLink takes no responsibility whatsoever for the accuracy or safety of unverified listings. We strongly recommend that users deal only with <span class="badge badge-green">✓ FieLink Verified</span> listings.</p>
+    </div>
+  </div>
+
+  <!-- Section 4 -->
+  <div class="section" id="s4">
+    <div class="section-number">Section 4</div>
+    <h2 class="section-head">Platform liability disclaimer</h2>
+    <div class="divider"></div>
+
+    <div class="clause">
+      <div class="clause-head"><span class="clause-num">4.1</span> FieLink is a connection platform, not a party to transactions</div>
+      <p>All rental and purchase agreements are made directly between the Property Seeker and the Landlord or Agent. FieLink is not a party to any such agreement and accepts no liability for any loss, damage, fraud, or dispute arising from a transaction between users.</p>
+    </div>
+
+    <div class="clause">
+      <div class="clause-head"><span class="clause-num">4.2</span> No liability for financial loss from third-party fraud</div>
+      <p>If a user suffers financial loss as a result of fraud committed by a landlord, agent, or any other third party found through the Platform — including in cases where the listing carried the Verified badge — FieLink's liability is limited to removal of the fraudulent listing and reporting assistance as described in Section 9. FieLink does not provide financial compensation for losses arising from third-party fraud.</p>
+    </div>
+
+    <div class="clause">
+      <div class="clause-head"><span class="clause-num">4.3</span> No liability for property condition</div>
+      <p>FieLink does not inspect properties on behalf of tenants for structural safety, habitability, or legal compliance with building regulations. Any assessment of property condition is the sole responsibility of the Property Seeker prior to entering a rental agreement.</p>
+    </div>
+
+    <div class="clause">
+      <div class="clause-head"><span class="clause-num">4.4</span> Platform availability</div>
+      <p>FieLink provides the Platform on a best-efforts basis. We do not guarantee uninterrupted access and accept no liability for loss arising from Platform downtime, errors, or technical failures.</p>
+    </div>
+
+    <div class="clause">
+      <div class="clause-head"><span class="clause-num">4.5</span> Limitation of liability</div>
+      <p>To the maximum extent permitted by Ghanaian law, FieLink's total aggregate liability to any user for any claim arising out of or in connection with their use of the Platform shall not exceed the amount paid by that user to FieLink in the three months preceding the claim.</p>
+    </div>
+  </div>
+
+  <!-- Section 5 -->
+  <div class="section" id="s5">
+    <div class="section-number">Section 5</div>
+    <h2 class="section-head">Property seeker responsibilities</h2>
+    <div class="divider"></div>
+    <p>By using FieLink to search for property, you agree to the following.</p>
+
+    <div class="clause">
+      <div class="clause-head"><span class="clause-num">5.1</span> Conduct your own due diligence</div>
+      <p>Before paying any deposit, advance rent, or fee to a landlord or agent, you should physically visit the property, verify the landlord's identity in person, review any tenancy agreement carefully, and consider obtaining independent legal advice for high-value transactions.</p>
+    </div>
+
+    <div class="clause">
+      <div class="clause-head"><span class="clause-num">5.2</span> Never pay before viewing</div>
+      <p>FieLink strongly advises against making any payment — including deposits, "holding fees", or advance rent — before you have physically visited the property and confirmed that the person you are dealing with is the verified landlord or their authorised agent.</p>
+    </div>
+
+    <div class="clause">
+      <div class="clause-head"><span class="clause-num">5.3</span> Insist on a written tenancy agreement</div>
+      <p>Any rental agreement should be documented in writing before money changes hands. The Ghana Rent Act requires a written tenancy agreement for any rental exceeding six months. FieLink recommends using a written agreement for all tenancies regardless of duration.</p>
+    </div>
+
+    <div class="clause">
+      <div class="clause-head"><span class="clause-num">5.4</span> Report suspicious listings immediately</div>
+      <p>If you encounter a listing you believe to be fraudulent, misrepresented, or duplicated from another platform, report it to FieLink immediately at <strong>report@fielink.com</strong> or via WhatsApp. Do not pay the listed party.</p>
+    </div>
+  </div>
+
+  <!-- Section 6 -->
+  <div class="section" id="s6">
+    <div class="section-number">Section 6</div>
+    <h2 class="section-head">Landlord and agent responsibilities</h2>
+    <div class="divider"></div>
+
+    <div class="clause">
+      <div class="clause-head"><span class="clause-num">6.1</span> Accuracy of information</div>
+      <p>By listing a property on FieLink, you warrant that all information provided — including photos, description, price, location, and availability — is accurate and not misleading at the time of listing. You agree to inform FieLink within 24 hours if a listed property is no longer available.</p>
+    </div>
+
+    <div class="clause">
+      <div class="clause-head"><span class="clause-num">6.2</span> Authority to list</div>
+      <p>You confirm that you are the lawful owner of the listed property, or that you are a licensed agent with written authorisation from the owner to market and let the property on their behalf. Listing a property you do not have authority to let is a breach of this policy and may constitute fraud under Ghanaian law.</p>
+    </div>
+
+    <div class="clause">
+      <div class="clause-head"><span class="clause-num">6.3</span> Verification cooperation</div>
+      <p>You agree to cooperate fully with FieLink's verification process, including providing valid identification, allowing a FieLink representative to visit and photograph the property, and supplying relevant ownership or authorisation documents.</p>
+    </div>
+
+    <div class="clause">
+      <div class="clause-head"><span class="clause-num">6.4</span> Verification fees are non-refundable</div>
+      <p>Verification fees paid to FieLink cover the cost of the physical site visit and documentation process. Fees are non-refundable once the verification visit has been conducted, regardless of whether the listing is subsequently published.</p>
+    </div>
+
+    <div class="clause">
+      <div class="clause-head"><span class="clause-num">6.5</span> Consequences of providing false information</div>
+      <p>If FieLink discovers that a landlord or agent has provided false or misleading information — including forged documents, misrepresented photos, or false identity — the listing will be immediately removed, the user will be permanently banned from the Platform, and FieLink reserves the right to report the matter to the Ghana Police Service and relevant authorities.</p>
+    </div>
+  </div>
+
+  <!-- Section 7 -->
+  <div class="section" id="s7">
+    <div class="section-number">Section 7</div>
+    <h2 class="section-head">Prohibited conduct</h2>
+    <div class="divider"></div>
+    <p>The following actions are strictly prohibited on the FieLink Platform and may result in immediate account removal, reporting to authorities, and legal action:</p>
+
+    <div class="clause">
+      <div class="clause-head"><span class="clause-num">7.1</span> Fraudulent listings</div>
+      <p>Listing a property you do not own or have no authority to let; using photographs copied from other platforms or listings; advertising a property that has already been let or does not exist as described.</p>
+    </div>
+    <div class="clause">
+      <div class="clause-head"><span class="clause-num">7.2</span> Identity misrepresentation</div>
+      <p>Presenting false identity documents during the verification process, or impersonating another person, landlord, or agent.</p>
+    </div>
+    <div class="clause">
+      <div class="clause-head"><span class="clause-num">7.3</span> Double-listing and double-letting</div>
+      <p>Listing the same property on multiple platforms simultaneously with the intent to collect deposits from multiple prospective tenants.</p>
+    </div>
+    <div class="clause">
+      <div class="clause-head"><span class="clause-num">7.4</span> Demanding fees not agreed in advance</div>
+      <p>Charging property seekers undisclosed fees, "viewing fees", or agent commissions that were not clearly stated in the listing.</p>
+    </div>
+    <div class="clause">
+      <div class="clause-head"><span class="clause-num">7.5</span> Harassment or threatening conduct</div>
+      <p>Using the Platform to harass, threaten, or intimidate any other user, FieLink representative, or third party.</p>
+    </div>
+  </div>
+
+  <!-- Section 8 -->
+  <div class="section" id="s8">
+    <div class="section-number">Section 8</div>
+    <h2 class="section-head">Data collection and privacy</h2>
+    <div class="divider"></div>
+
+    <p>FieLink is registered with the <strong>Ghana Data Protection Commission</strong> under the Data Protection Act, 2012 (Act 843). DPC Registration No.: <strong>[INSERT NUMBER]</strong>. Our DPC Privacy Seal is displayed on our homepage.</p>
+
+    <div class="clause">
+      <div class="clause-head"><span class="clause-num">8.1</span> Data we collect</div>
+      <p>We collect the following categories of personal data: your name and contact number (when you enquire about a listing or register as a landlord); property information and identity documents (from landlords during verification); and usage data about how you interact with our Platform.</p>
+    </div>
+
+    <div class="clause">
+      <div class="clause-head"><span class="clause-num">8.2</span> How we use your data</div>
+      <p>We use your data to connect property seekers with landlords, to conduct our verification process, to communicate with you about listings and enquiries, to improve our Platform, and to comply with legal obligations under Ghanaian law.</p>
+    </div>
+
+    <div class="clause">
+      <div class="clause-head"><span class="clause-num">8.3</span> We do not sell your data</div>
+      <p>FieLink does not sell, rent, or share your personal data with third parties for commercial purposes. Your phone number and contact details are used only to facilitate the specific property enquiry you initiated.</p>
+    </div>
+
+    <div class="clause">
+      <div class="clause-head"><span class="clause-num">8.4</span> Your rights under Act 843</div>
+      <p>Under the Ghana Data Protection Act, you have the right to: access the personal data we hold about you; request correction of inaccurate data; request deletion of your data where we no longer have a lawful basis to retain it; and object to processing that causes you damage or distress. To exercise these rights, contact us at <strong>privacy@fielink.com</strong>.</p>
+    </div>
+
+    <div class="clause">
+      <div class="clause-head"><span class="clause-num">8.5</span> Landlord document retention</div>
+      <p>Identity documents and ownership documents collected during verification are retained securely for a minimum of 12 months after a listing is removed. This allows us to respond to any disputes or fraud reports relating to that listing. Documents are stored in encrypted form and are not accessible to other users.</p>
+    </div>
+
+    <div class="clause">
+      <div class="clause-head"><span class="clause-num">8.6</span> WhatsApp communications</div>
+      <p>When you contact us or receive our broadcasts via WhatsApp, you consent to FieLink saving your number in our contact database and sending you property-related updates. You may opt out at any time by replying "STOP" to any broadcast message.</p>
+    </div>
+  </div>
+
+  <!-- Section 9 -->
+  <div class="section" id="s9">
+    <div class="section-number">Section 9</div>
+    <h2 class="section-head">Dispute and complaints process</h2>
+    <div class="divider"></div>
+    <p>If you have a complaint about a listing, a landlord, an agent, or our verification process, follow these steps.</p>
+
+    <ul class="step-list">
+      <li><p><strong>Report to FieLink immediately.</strong> Email <strong>report@fielink.com</strong> or WhatsApp us at <strong>[INSERT NUMBER]</strong>. Include the listing link or ID, your name and contact number, and a clear description of the issue.</p></li>
+      <li><p><strong>We acknowledge within 24 hours.</strong> FieLink will confirm receipt of your complaint within 24 hours (business days) and assign a reference number.</p></li>
+      <li><p><strong>Investigation within 5 business days.</strong> We will contact the relevant landlord or agent and review evidence provided by both parties. If a listing is found to be fraudulent or misleading, it will be removed immediately upon confirmation — not at the end of the process.</p></li>
+      <li><p><strong>Outcome communicated within 10 business days.</strong> We will inform you of our findings and any action taken. If the complaint is upheld, we will provide a written summary you can use for any further legal action or police report.</p></li>
+      <li><p><strong>Escalation.</strong> If you are unsatisfied with our resolution, you may escalate to the <strong>Ghana Data Protection Commission</strong> (for data-related complaints at <a href="mailto:compliance@dataprotection.org.gh">compliance@dataprotection.org.gh</a>), the <strong>Ghana Police Service</strong> (for fraud), or the <strong>Rent Control Department</strong> (for tenancy disputes). FieLink will cooperate fully with any official investigation.</p></li>
+    </ul>
+
+    <div class="clause warn">
+      <div class="clause-head"><span class="clause-num">!</span> FieLink cannot recover lost funds</div>
+      <p>We do not hold funds on behalf of users and cannot recover money paid to a landlord or agent. If you have been defrauded, report to the Ghana Police Service CID immediately. FieLink will provide your complaint record and any landlord identification documents we hold to support an official police investigation upon receipt of a formal request.</p>
+    </div>
+  </div>
+
+  <!-- Section 10 -->
+  <div class="section" id="s10">
+    <div class="section-number">Section 10</div>
+    <h2 class="section-head">Changes to this policy</h2>
+    <div class="divider"></div>
+    <p>FieLink may update this policy from time to time to reflect changes in our services, Ghanaian law, or operational practice. When we make material changes, we will post the updated policy on our website and notify active users via WhatsApp broadcast. The date at the top of this document reflects the most recent revision. Your continued use of the Platform after a policy update constitutes acceptance of the revised terms.</p>
+  </div>
+
+  <!-- Section 11 -->
+  <div class="section" id="s11">
+    <div class="section-number">Section 11</div>
+    <h2 class="section-head">Contact us</h2>
+    <div class="divider"></div>
+    <div class="contact-block">
+      <h3>FieLink — we are always reachable</h3>
+      <p>📧 General enquiries: <a href="mailto:hello@fielink.com">hello@fielink.com</a></p>
+      <p>🚨 Fraud or listing reports: <a href="mailto:report@fielink.com">report@fielink.com</a></p>
+      <p>🔒 Data and privacy: <a href="mailto:privacy@fielink.com">privacy@fielink.com</a></p>
+      <p>📱 WhatsApp: <strong>[INSERT WHATSAPP NUMBER]</strong></p>
+      <p>🌐 Website: <a href="https://www.fielink.com">www.fielink.com</a></p>
+      <p style="margin-top:16px;font-size:12px;color:rgba(255,255,255,0.4)">FieLink is registered in Ghana. Governing law: Republic of Ghana. Any dispute not resolved by our complaints process shall be referred to the courts of Ghana.</p>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="doc-footer">
+    <p>© <span id="yr"></span> FieLink. All rights reserved. This document is governed by the laws of the Republic of Ghana, including the Data Protection Act, 2012 (Act 843) and the Rent Act (Act 220). FieLink is registered with the Registrar General's Department of Ghana and the Data Protection Commission.</p>
+    <p style="margin-top:8px"><em>This policy was last reviewed and updated on [INSERT DATE]. Document version 1.0.</em></p>
+  </div>
+
+</div>
+<script>document.getElementById('yr').textContent=new Date().getFullYear()</script>
+</body>
+</html>

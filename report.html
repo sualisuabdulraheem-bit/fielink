@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Report a Scam or Suspicious Listing — FieLink</title>
+<link rel="icon" href="data:,"/>
+<link rel="stylesheet" href="/css/style.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">Fie<span>Link</span></a>
+    <div class="nav-links"><a href="/">Home</a></div>
+    <div class="nav-cta"><a href="/#lead" class="btn btn-outline btn-sm">Join Broadcast</a></div>
+  </div>
+</nav>
+
+<header class="hero" style="padding:48px 0">
+  <div class="container hero-inner">
+    <div class="hero-badge"><i class="ti ti-flag"></i> Trust & Safety</div>
+    <h1 style="font-size:32px">Report a scam or suspicious listing</h1>
+    <p class="lead">If something feels wrong — a listing that looks fake, a landlord asking for money before a viewing, or a property that doesn't match the photos — tell us immediately. We investigate every report.</p>
+  </div>
+</header>
+
+<section class="section">
+  <div class="container" style="max-width:640px">
+    <div class="card" style="background:#fff;border:1px solid var(--lgray);border-radius:var(--radius);padding:28px">
+      <form id="report-form" onsubmit="return submitReport(event)">
+        <div class="calc-field" style="margin-bottom:16px">
+          <label style="display:block;font-size:13px;color:var(--text2);margin-bottom:6px;font-weight:500">What's the issue? *</label>
+          <select id="report-reason" required style="width:100%;padding:11px 14px;border-radius:8px;border:1px solid var(--lgray)">
+            <option value="">Select a reason</option>
+            <option value="fake_listing">Listing appears fake or fabricated</option>
+            <option value="payment_before_viewing">Landlord/agent demanded payment before a viewing</option>
+            <option value="wrong_photos">Photos don't match the actual property</option>
+            <option value="already_let">Property was already let but still listed</option>
+            <option value="identity_concern">Landlord identity could not be confirmed</option>
+            <option value="harassment">Harassment or threatening behaviour</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="calc-field" style="margin-bottom:16px">
+          <label style="display:block;font-size:13px;color:var(--text2);margin-bottom:6px;font-weight:500">Listing link or ID (if known)</label>
+          <input type="text" id="report-listing" placeholder="Paste the listing link or leave blank" style="width:100%;padding:11px 14px;border-radius:8px;border:1px solid var(--lgray)"/>
+        </div>
+        <div class="calc-field" style="margin-bottom:16px">
+          <label style="display:block;font-size:13px;color:var(--text2);margin-bottom:6px;font-weight:500">Tell us what happened</label>
+          <textarea id="report-details" rows="4" placeholder="The more detail you give, the faster we can act." style="width:100%;padding:11px 14px;border-radius:8px;border:1px solid var(--lgray);font-family:inherit"></textarea>
+        </div>
+        <div class="calc-field" style="margin-bottom:20px">
+          <label style="display:block;font-size:13px;color:var(--text2);margin-bottom:6px;font-weight:500">Your WhatsApp or email (so we can follow up)</label>
+          <input type="text" id="report-contact" placeholder="Optional but helps us update you" style="width:100%;padding:11px 14px;border-radius:8px;border:1px solid var(--lgray)"/>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block"><i class="ti ti-send"></i> Submit report</button>
+      </form>
+    </div>
+
+    <div class="alert" style="background:var(--dangerlt);border:1px solid #FAAAA0;border-radius:12px;padding:16px 18px;margin-top:20px">
+      <div style="font-size:13px;font-weight:600;color:var(--danger);margin-bottom:4px"><i class="ti ti-alert-circle"></i> If you've already lost money</div>
+      <div style="font-size:13px;color:#A93226;line-height:1.6">FieLink cannot recover funds already paid to a third party. Report to the Ghana Police Service CID immediately. We will cooperate fully with any official investigation and can provide your report record on request.</div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-bottom" style="border-top:none;padding-top:0">
+      <span>&copy; <span id="year"></span> FieLink</span>
+      <a href="/policy.html" style="color:var(--softg)">Policy & terms</a>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+document.getElementById('year').textContent = new Date().getFullYear();
+const params = new URLSearchParams(window.location.search);
+if (params.get('listing')) document.getElementById('report-listing').value = params.get('listing');
+
+function showToast(message, isError) {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.className = 'toast show' + (isError ? ' error' : '');
+  setTimeout(() => { toast.className = 'toast'; }, 3200);
+}
+
+async function submitReport(e) {
+  e.preventDefault();
+  const reason = document.getElementById('report-reason').value;
+  const listingId = document.getElementById('report-listing').value;
+  const details = document.getElementById('report-details').value;
+  const reporterContact = document.getElementById('report-contact').value;
+
+  try {
+    const res = await fetch('/api/v1/report', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reason, listingId, details, reporterContact })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Something went wrong.');
+    showToast('Report received. Thank you for helping keep FieLink trustworthy.');
+    document.getElementById('report-form').reset();
+  } catch (err) {
+    showToast(err.message, true);
+  }
+  return false;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>FieLink — Trusted Homes. Real Connections. | Verified Rentals in Ghana</title>
+<meta name="description" content="FieLink is Ghana's verified-first property platform. Every listing is physically visited, photographed, and identity-checked before it goes live. Search verified apartments in Accra and Kumasi."/>
+<meta property="og:title" content="FieLink — Trusted Homes. Real Connections."/>
+<meta property="og:description" content="Ghana's only verified-first property platform. Physically inspected. Identity-checked. WhatsApp-native."/>
+<meta property="og:type" content="website"/>
+<link rel="icon" href="data:,"/>
+<link rel="stylesheet" href="/css/style.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">Fie<span>Link</span></a>
+    <div class="nav-links">
+      <a href="#listings">Listings</a>
+      <a href="#verification">How Verification Works</a>
+      <a href="#trust-index">Trust Index</a>
+      <a href="#calculator">Rent Calculator</a>
+      <a href="/report.html">Report a Scam</a>
+    </div>
+    <div class="nav-cta">
+      <a href="#lead" class="btn btn-outline btn-sm">Join Broadcast</a>
+      <a id="nav-whatsapp" href="#" target="_blank" class="btn btn-whatsapp btn-sm"><i class="ti ti-brand-whatsapp"></i> WhatsApp</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="container hero-inner">
+    <div class="hero-badge"><b>&#10003;</b> Ghana's only physically-verified property platform</div>
+    <h1>Every listing on FieLink has been <em>physically visited</em> before you see it.</h1>
+    <p class="lead">No fake photos. No ghost listings. No agents who vanish after the deposit. FieLink verifies every property in person — then connects you directly by WhatsApp.</p>
+    <div class="hero-actions">
+      <a href="#listings" class="btn btn-gold">Browse verified listings</a>
+      <a href="#verification" class="btn btn-outline" style="border-color:rgba(255,255,255,0.3);color:#fff">See how verification works</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hstat"><b id="stat-listings">—</b><span>Verified listings live</span></div>
+      <div class="hstat"><b>6/6</b><span>Verification checks per listing</span></div>
+      <div class="hstat"><b>$7.8B</b><span>Diaspora remittances, 2025</span></div>
+      <div class="hstat"><b>0</b><span>Tolerance for fake listings</span></div>
+    </div>
+
+    <div class="searchbar">
+      <input type="text" id="search-q" placeholder="Search by area, e.g. Spintex, East Legon..."/>
+      <select id="search-area"><option value="">All areas</option></select>
+      <select id="search-bedrooms">
+        <option value="">Any bedrooms</option>
+        <option value="1">1+ bedroom</option>
+        <option value="2">2+ bedrooms</option>
+        <option value="3">3+ bedrooms</option>
+        <option value="4">4+ bedrooms</option>
+      </select>
+      <select id="search-max-price">
+        <option value="">Any price</option>
+        <option value="1500">Up to GH₵1,500</option>
+        <option value="3000">Up to GH₵3,000</option>
+        <option value="5000">Up to GH₵5,000</option>
+        <option value="10000">Up to GH₵10,000</option>
+      </select>
+      <button class="btn btn-primary" onclick="applyFilters()"><i class="ti ti-search"></i> Search</button>
+    </div>
+  </div>
+</header>
+
+<!-- SCAM TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker">
+    <span><b>Never</b> pay a deposit before physically viewing a property.</span>
+    <span><b>Always</b> confirm the landlord's identity before transferring money.</span>
+    <span><b>Insist</b> on a written tenancy agreement for every rental.</span>
+    <span>Report suspicious listings instantly — <a href="/report.html" style="color:#4ADE80">tap here</a>.</span>
+    <span><b>FieLink Verified</b> means physically visited, ID-checked, and photographed on site.</span>
+    <span><b>Never</b> pay a deposit before physically viewing a property.</span>
+    <span><b>Always</b> confirm the landlord's identity before transferring money.</span>
+    <span><b>Insist</b> on a written tenancy agreement for every rental.</span>
+    <span>Report suspicious listings instantly — <a href="/report.html" style="color:#4ADE80">tap here</a>.</span>
+    <span><b>FieLink Verified</b> means physically visited, ID-checked, and photographed on site.</span>
+  </div>
+</div>
+
+<!-- LISTINGS -->
+<section class="section" id="listings">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <div class="section-title">Verified listings</div>
+        <div class="section-sub">Every property below has passed FieLink's 6-point physical verification — or is clearly marked if it hasn't.</div>
+      </div>
+    </div>
+
+    <div class="filters-bar">
+      <button class="filter-chip active" data-filter="all" onclick="setQuickFilter('all',this)">All</button>
+      <button class="filter-chip" data-filter="verified" onclick="setQuickFilter('verified',this)"><i class="ti ti-shield-check"></i> Verified only</button>
+      <button class="filter-chip" data-filter="1" onclick="setBedroomFilter(1,this)">1 Bed</button>
+      <button class="filter-chip" data-filter="2" onclick="setBedroomFilter(2,this)">2 Bed</button>
+      <button class="filter-chip" data-filter="3" onclick="setBedroomFilter(3,this)">3+ Bed</button>
+      <div class="diaspora-toggle">
+        <i class="ti ti-world"></i> Diaspora mode (show USD)
+        <label class="switch"><input type="checkbox" id="diaspora-toggle" onchange="toggleDiasporaMode()"><span class="slider"></span></label>
+      </div>
+    </div>
+
+    <div id="listing-grid" class="listing-grid">
+      <!-- populated by main.js -->
+    </div>
+  </div>
+</section>
+
+<!-- VERIFICATION -->
+<section class="section section-alt" id="verification">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <div class="section-title">The FieLink Verification Standard</div>
+        <div class="section-sub">This isn't a badge we hand out. It's a 6-step process enforced by our own admin software — a listing cannot go live until every step is complete.</div>
+      </div>
+    </div>
+    <div class="verify-grid">
+      <div class="verify-step"><div class="verify-icon"><i class="ti ti-home-check"></i></div><h4>Physical site visit</h4><p>A FieLink representative visits and walks through every property before it's listed. No exceptions.</p></div>
+      <div class="verify-step"><div class="verify-icon"><i class="ti ti-camera"></i></div><h4>Original photos only</h4><p>All photos are taken on-site by FieLink. No stock images. No photos reused from other listings.</p></div>
+      <div class="verify-step"><div class="verify-icon"><i class="ti ti-id-badge"></i></div><h4>Identity verified</h4><p>The landlord presents a valid Ghana Card or passport, checked and recorded before listing.</p></div>
+      <div class="verify-step"><div class="verify-icon"><i class="ti ti-file-certificate"></i></div><h4>Ownership documents</h4><p>Title deed, lease, or written letting authority is reviewed before the listing is published.</p></div>
+      <div class="verify-step"><div class="verify-icon"><i class="ti ti-brand-whatsapp"></i></div><h4>Contact confirmed</h4><p>The listed phone number is confirmed active and reachable on WhatsApp at time of publishing.</p></div>
+      <div class="verify-step"><div class="verify-icon"><i class="ti ti-refresh"></i></div><h4>Live availability</h4><p>Listings are removed within 24 hours of being reported let. No ghost listings sitting for months.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST INDEX -->
+<section class="section" id="trust-index">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <div class="section-title">Neighbourhood Trust Index</div>
+        <div class="section-sub">Live data from every verified listing on FieLink — average pricing and verification depth by area. No competitor publishes this.</div>
+      </div>
+    </div>
+    <div class="trust-list">
+      <div class="trust-row head">
+        <span>Area</span><span>Listings</span><span class="tr-avg">Avg. price</span><span>Verified</span>
+      </div>
+      <div id="trust-index-body">
+        <!-- populated by main.js -->
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RENT CALCULATOR -->
+<section class="section section-alt" id="calculator">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <div class="section-title">Rent affordability calculator</div>
+        <div class="section-sub">Figure out what you can safely afford before you start searching — and see how many FieLink listings match your budget.</div>
+      </div>
+    </div>
+    <div class="calc-box">
+      <div class="calc-grid">
+        <div>
+          <div class="calc-field">
+            <label>Your monthly income (GH₵)</label>
+            <input type="number" id="calc-income" placeholder="e.g. 6000" oninput="runCalculator()"/>
+          </div>
+          <div class="calc-field">
+            <label>How many years of rent upfront can you pay?</label>
+            <select id="calc-years" onchange="runCalculator()">
+              <option value="1">1 year</option>
+              <option value="2">2 years</option>
+            </select>
+          </div>
+          <p style="font-size:12.5px;color:var(--softg)">Ghana landlords typically ask for 1–2 years rent in advance. This calculator uses the standard 30%-of-income guideline, adjusted for Ghana's advance-rent norm.</p>
+        </div>
+        <div class="calc-result">
+          <div style="font-size:13px;color:var(--softg)">Recommended monthly rent</div>
+          <div class="amt" id="calc-monthly">GH₵0</div>
+          <div class="note" id="calc-note">Enter your income to calculate</div>
+          <div class="divider" style="height:1px;background:var(--navy);margin:16px 0"></div>
+          <div style="font-size:13px;color:var(--softg)" id="calc-match">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="section" id="testimonials-section" style="display:none">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <div class="section-title">What people are saying</div>
+      </div>
+    </div>
+    <div class="testi-grid" id="testi-grid"></div>
+  </div>
+</section>
+
+<!-- LEAD / BROADCAST SIGNUP -->
+<section class="section" id="lead">
+  <div class="container">
+    <div class="lead-section">
+      <div class="serif" style="font-size:24px;color:var(--navy);margin-bottom:8px">Join the FieLink WhatsApp Broadcast</div>
+      <p style="color:var(--text2);max-width:480px;margin:0 auto 4px">Get new verified listings every Wednesday — straight to WhatsApp. No spam, no groups, just curated properties.</p>
+      <form class="lead-form" id="lead-form" onsubmit="return submitLead(event)">
+        <input type="text" id="lead-name" placeholder="Your name" required/>
+        <input type="tel" id="lead-whatsapp" placeholder="WhatsApp number e.g. 233241234567" required/>
+        <select id="lead-type">
+          <option value="seeker">I'm looking for a home</option>
+          <option value="diaspora">I'm in the diaspora (UK/US)</option>
+          <option value="landlord">I'm a landlord</option>
+          <option value="agent">I'm an agent</option>
+        </select>
+        <button type="submit" class="btn btn-primary">Join Broadcast</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="nav-logo" style="color:#fff;margin-bottom:8px">Fie<span style="color:#4ADE80">Link</span></div>
+        <p style="font-size:13px;color:var(--softg);max-width:280px">Ghana's verified-first property platform. Trusted Homes. Real Connections.</p>
+      </div>
+      <div>
+        <h5>Platform</h5>
+        <a href="#listings">Listings</a>
+        <a href="#verification">Verification standard</a>
+        <a href="#trust-index">Trust index</a>
+        <a href="#calculator">Rent calculator</a>
+      </div>
+      <div>
+        <h5>Trust & Safety</h5>
+        <a href="/report.html">Report a scam</a>
+        <a href="/policy.html">Policy & terms</a>
+        <a href="/policy.html#s8">Data & privacy</a>
+      </div>
+      <div>
+        <h5>Contact</h5>
+        <a href="mailto:hello@fielink.com">hello@fielink.com</a>
+        <a id="footer-whatsapp" href="#" target="_blank">WhatsApp us</a>
+        <a href="/admin/login.html" style="opacity:.5">Admin</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; <span id="year"></span> FieLink. Registered in Ghana.</span>
+      <span>DPC Registered · Data Protection Act 2012 (Act 843)</span>
+    </div>
+  </div>
+</footer>
+
+<!-- LISTING DETAIL MODAL -->
+<div class="modal-overlay" id="listing-modal">
+  <div class="modal-box" id="listing-modal-body" style="max-width:640px">
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <div id="listing-modal-content"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="/js/main.js"></script>
+</body>
+</html>

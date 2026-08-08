@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Admin Login — FieLink</title>
+<meta name="robots" content="noindex,nofollow"/>
+<link rel="icon" href="data:,"/>
+<link rel="stylesheet" href="/css/style.css"/>
+</head>
+<body style="background:var(--navy)">
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:var(--radius);padding:36px;width:100%;max-width:380px;box-shadow:var(--shadow-lg)">
+    <div class="nav-logo center" style="margin-bottom:6px">Fie<span style="color:var(--em)">Link</span></div>
+    <p class="center text-muted" style="font-size:13px;margin-bottom:24px">Admin dashboard</p>
+    <form id="login-form" onsubmit="return doLogin(event)">
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-size:13px;color:var(--text2);margin-bottom:6px;font-weight:500">Username</label>
+        <input type="text" id="username" required style="width:100%;padding:11px 14px;border-radius:8px;border:1px solid var(--lgray)"/>
+      </div>
+      <div style="margin-bottom:20px">
+        <label style="display:block;font-size:13px;color:var(--text2);margin-bottom:6px;font-weight:500">Password</label>
+        <input type="password" id="password" required style="width:100%;padding:11px 14px;border-radius:8px;border:1px solid var(--lgray)"/>
+      </div>
+      <button type="submit" class="btn btn-navy btn-block">Log in</button>
+      <div id="login-error" style="color:var(--danger);font-size:13px;margin-top:12px;display:none"></div>
+    </form>
+    <a href="/" style="display:block;text-align:center;margin-top:20px;font-size:13px;color:var(--mgray)">&larr; Back to FieLink</a>
+  </div>
+</div>
+<script>
+async function doLogin(e) {
+  e.preventDefault();
+  const username = document.getElementById('username').value;
+  const password = document.getElementById('password').value;
+  const errEl = document.getElementById('login-error');
+  errEl.style.display = 'none';
+  try {
+    const res = await fetch('/api/v1/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Login failed');
+    window.location.href = '/admin/dashboard.html';
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.style.display = 'block';
+  }
+  return false;
+}
+</script>
+</body>
+</html>
