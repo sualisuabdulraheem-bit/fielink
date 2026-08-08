@@ -1,40 +1,20 @@
 /**
- * FieLink data layer.
+ * FieLink data layer — Supabase edition.
  *
- * This is a JSON-file-backed store today. Every function is async and
- * returns plain objects/arrays on purpose — that means when you're ready
- * to migrate to Supabase (see README "Migrating to Supabase"), you only
- * need to rewrite the inside of these functions. Nothing in routes/ or
- * public/js/ needs to change, because they only ever talk to this module.
+ * This replaces the original JSON-file-backed store. Every exported
+ * function keeps the exact same name and return shape as before, so
+ * nothing in routes/, public/js/, or anywhere else needed to change.
+ * Data now lives in Supabase Postgres (persists across restarts) and
+ * photos live in Supabase Storage (also persists — unlike Render's
+ * free-tier disk, which wipes on every restart).
  */
 
-const fs = require('fs/promises');
-const path = require('path');
+const { createClient } = require('@supabase/supabase-js');
 const crypto = require('crypto');
 
-const DATA_DIR = path.join(__dirname, 'data');
-const LISTINGS_FILE = path.join(DATA_DIR, 'listings.json');
-const LEADS_FILE = path.join(DATA_DIR, 'leads.json');
-const REPORTS_FILE = path.join(DATA_DIR, 'reports.json');
-const TESTIMONIALS_FILE = path.join(DATA_DIR, 'testimonials.json');
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
-async function readJSON(file) {
-  try {
-    const raw = await fs.readFile(file, 'utf-8');
-    return JSON.parse(raw);
-  } catch (err) {
-    if (err.code === 'ENOENT') return [];
-    throw err;
-  }
-}
-
-async function writeJSON(file, data) {
-  // Write to a temp file then rename — avoids corrupting the file if the
-  // process crashes mid-write. Cheap insurance for a JSON-file datastore.
-  const tmp = `${file}.tmp`;
-  await fs.writeFile(tmp, JSON.stringify(data, null, 2), 'utf-8');
-  await fs.rename(tmp, file);
-}
+const PHOTOS_BUCKET = 'listing-photos';
 
 function newId(prefix = 'fl') {
   return `${prefix}_${crypto.randomBytes(6).toString('hex')}`;
@@ -54,23 +34,76 @@ function isFullyVerified(verification) {
   return VERIFICATION_KEYS.every((k) => verification[k] === true);
 }
 
+// Convert a Supabase row (snake_case columns) into the camelCase shape
+// the rest of the app already expects.
+function rowToListing(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    title: row.title,
+    type: row.type,
+    area: row.area,
+    city: row.city,
+    price: Number(row.price),
+    currency: row.currency,
+    period: row.period,
+    bedrooms: row.bedrooms,
+    bathrooms: row.bathrooms,
+    description: row.description || '',
+    photos: row.photos || [],
+    diasporaReady: !!row.diaspora_ready,
+    landlordName: row.landlord_name || '',
+    landlordWhatsapp: row.landlord_whatsapp || '',
+    verification: row.verification || {},
+    status: row.status,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  };
+}
+
+function rowToLead(row) {
+  return {
+    id: row.id,
+    name: row.name || '',
+    whatsapp: row.whatsapp,
+    type: row.type,
+    area: row.area || '',
+    createdAt: row.created_at
+  };
+}
+
+function rowToReport(row) {
+  return {
+    id: row.id,
+    listingId: row.listing_id,
+    reporterContact: row.reporter_contact || '',
+    reason: row.reason,
+    details: row.details || '',
+    status: row.status,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  };
+}
+
 // ---------- Listings ----------
 
 async function getAllListings({ publicOnly = false } = {}) {
-  const listings = await readJSON(LISTINGS_FILE);
-  if (!publicOnly) return listings;
-  return listings.filter((l) => l.status === 'published');
+  let query = supabase.from('listings').select('*').order('created_at', { ascending: false });
+  if (publicOnly) query = query.eq('status', 'published');
+  const { data, error } = await query;
+  if (error) throw error;
+  return (data || []).map(rowToListing);
 }
 
 async function getListingById(id) {
-  const listings = await readJSON(LISTINGS_FILE);
-  return listings.find((l) => l.id === id) || null;
+  const { data, error } = await supabase.from('listings').select('*').eq('id', id).maybeSingle();
+  if (error) throw error;
+  return rowToListing(data);
 }
 
 async function createListing(data) {
-  const listings = await readJSON(LISTINGS_FILE);
   const now = new Date().toISOString();
-  const listing = {
+  const row = {
     id: newId('listing'),
     title: data.title,
     type: data.type,
@@ -83,9 +116,9 @@ async function createListing(data) {
     bathrooms: Number(data.bathrooms) || 0,
     description: data.description || '',
     photos: data.photos || [],
-    diasporaReady: !!data.diasporaReady,
-    landlordName: data.landlordName || '',
-    landlordWhatsapp: data.landlordWhatsapp || '',
+    diaspora_ready: !!data.diasporaReady,
+    landlord_name: data.landlordName || '',
+    landlord_whatsapp: data.landlordWhatsapp || '',
     verification: {
       physicalVisit: false,
       originalPhotos: false,
@@ -96,32 +129,42 @@ async function createListing(data) {
       verifiedDate: null,
       verifiedBy: null
     },
-    status: 'draft', // draft -> published (never auto-verified)
-    createdAt: now,
-    updatedAt: now
+    status: 'draft',
+    created_at: now,
+    updated_at: now
   };
-  listings.unshift(listing);
-  await writeJSON(LISTINGS_FILE, listings);
-  return listing;
+  const { data: inserted, error } = await supabase.from('listings').insert(row).select().single();
+  if (error) throw error;
+  return rowToListing(inserted);
 }
 
 async function updateListing(id, patch) {
-  const listings = await readJSON(LISTINGS_FILE);
-  const idx = listings.findIndex((l) => l.id === id);
-  if (idx === -1) return null;
+  const existing = await getListingById(id);
+  if (!existing) return null;
 
-  const existing = listings[idx];
-  const updated = { ...existing, ...patch, updatedAt: new Date().toISOString() };
-
-  // Verification is a nested object — merge, don't replace, so partial
-  // checklist updates from the admin UI don't wipe other checked boxes.
+  const dbPatch = { updated_at: new Date().toISOString() };
+  if (patch.title !== undefined) dbPatch.title = patch.title;
+  if (patch.type !== undefined) dbPatch.type = patch.type;
+  if (patch.area !== undefined) dbPatch.area = patch.area;
+  if (patch.city !== undefined) dbPatch.city = patch.city;
+  if (patch.price !== undefined) dbPatch.price = Number(patch.price);
+  if (patch.currency !== undefined) dbPatch.currency = patch.currency;
+  if (patch.period !== undefined) dbPatch.period = patch.period;
+  if (patch.bedrooms !== undefined) dbPatch.bedrooms = Number(patch.bedrooms);
+  if (patch.bathrooms !== undefined) dbPatch.bathrooms = Number(patch.bathrooms);
+  if (patch.description !== undefined) dbPatch.description = patch.description;
+  if (patch.photos !== undefined) dbPatch.photos = patch.photos;
+  if (patch.diasporaReady !== undefined) dbPatch.diaspora_ready = !!patch.diasporaReady;
+  if (patch.landlordName !== undefined) dbPatch.landlord_name = patch.landlordName;
+  if (patch.landlordWhatsapp !== undefined) dbPatch.landlord_whatsapp = patch.landlordWhatsapp;
+  if (patch.status !== undefined) dbPatch.status = patch.status;
   if (patch.verification) {
-    updated.verification = { ...existing.verification, ...patch.verification };
+    dbPatch.verification = { ...existing.verification, ...patch.verification };
   }
 
-  listings[idx] = updated;
-  await writeJSON(LISTINGS_FILE, listings);
-  return updated;
+  const { data, error } = await supabase.from('listings').update(dbPatch).eq('id', id).select().single();
+  if (error) throw error;
+  return rowToListing(data);
 }
 
 async function setVerificationStep(id, step, value, verifiedBy) {
@@ -145,10 +188,9 @@ async function setVerificationStep(id, step, value, verifiedBy) {
 }
 
 async function deleteListing(id) {
-  const listings = await readJSON(LISTINGS_FILE);
-  const filtered = listings.filter((l) => l.id !== id);
-  await writeJSON(LISTINGS_FILE, filtered);
-  return filtered.length !== listings.length;
+  const { error, count } = await supabase.from('listings').delete({ count: 'exact' }).eq('id', id);
+  if (error) throw error;
+  return (count || 0) > 0;
 }
 
 async function getAreaStats() {
@@ -165,64 +207,86 @@ async function getAreaStats() {
     .sort((a, b) => b.count - a.count);
 }
 
+// ---------- Photo storage (Supabase Storage) ----------
+
+async function uploadPhotos(files) {
+  const urls = [];
+  for (const file of files || []) {
+    const ext = (file.originalname.split('.').pop() || 'jpg').toLowerCase();
+    const path = `${Date.now()}-${crypto.randomBytes(4).toString('hex')}.${ext}`;
+    const { error } = await supabase.storage.from(PHOTOS_BUCKET).upload(path, file.buffer, {
+      contentType: file.mimetype,
+      upsert: false
+    });
+    if (error) throw error;
+    const { data: pub } = supabase.storage.from(PHOTOS_BUCKET).getPublicUrl(path);
+    urls.push(pub.publicUrl);
+  }
+  return urls;
+}
+
 // ---------- Leads (WhatsApp broadcast signups) ----------
 
 async function createLead(data) {
-  const leads = await readJSON(LEADS_FILE);
-  const lead = {
+  const row = {
     id: newId('lead'),
     name: data.name || '',
     whatsapp: data.whatsapp,
-    type: data.type || 'seeker', // seeker | landlord | agent | diaspora
+    type: data.type || 'seeker',
     area: data.area || '',
-    createdAt: new Date().toISOString()
+    created_at: new Date().toISOString()
   };
-  leads.unshift(lead);
-  await writeJSON(LEADS_FILE, leads);
-  return lead;
+  const { data: inserted, error } = await supabase.from('leads').insert(row).select().single();
+  if (error) throw error;
+  return rowToLead(inserted);
 }
 
 async function getAllLeads() {
-  return readJSON(LEADS_FILE);
+  const { data, error } = await supabase.from('leads').select('*').order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data || []).map(rowToLead);
 }
 
 // ---------- Fraud / listing reports ----------
 
 async function createReport(data) {
-  const reports = await readJSON(REPORTS_FILE);
-  const report = {
+  const row = {
     id: newId('report'),
-    listingId: data.listingId || null,
-    reporterContact: data.reporterContact || '',
+    listing_id: data.listingId || null,
+    reporter_contact: data.reporterContact || '',
     reason: data.reason,
     details: data.details || '',
     status: 'open',
-    createdAt: new Date().toISOString()
+    created_at: new Date().toISOString()
   };
-  reports.unshift(report);
-  await writeJSON(REPORTS_FILE, reports);
-  return report;
+  const { data: inserted, error } = await supabase.from('reports').insert(row).select().single();
+  if (error) throw error;
+  return rowToReport(inserted);
 }
 
 async function getAllReports() {
-  return readJSON(REPORTS_FILE);
+  const { data, error } = await supabase.from('reports').select('*').order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data || []).map(rowToReport);
 }
 
 async function updateReportStatus(id, status) {
-  const reports = await readJSON(REPORTS_FILE);
-  const idx = reports.findIndex((r) => r.id === id);
-  if (idx === -1) return null;
-  reports[idx].status = status;
-  reports[idx].updatedAt = new Date().toISOString();
-  await writeJSON(REPORTS_FILE, reports);
-  return reports[idx];
+  const { data, error } = await supabase
+    .from('reports')
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .select()
+    .maybeSingle();
+  if (error) throw error;
+  return data ? rowToReport(data) : null;
 }
 
 // ---------- Testimonials ----------
 
 async function getPublishedTestimonials() {
-  const all = await readJSON(TESTIMONIALS_FILE);
-  return all.filter((t) => t.published);
+  const { data, error } = await supabase.from('testimonials').select('*').eq('published', true);
+  if (error) throw error;
+  return (data || []).map((t) => ({ id: t.id, quote: t.quote, name: t.name, area: t.area || '' }));
 }
 
 module.exports = {
@@ -235,6 +299,7 @@ module.exports = {
   setVerificationStep,
   deleteListing,
   getAreaStats,
+  uploadPhotos,
   createLead,
   getAllLeads,
   createReport,
