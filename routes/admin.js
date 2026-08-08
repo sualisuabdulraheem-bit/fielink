@@ -55,7 +55,7 @@ router.get('/listings', async (req, res, next) => {
 
 router.post('/listings', upload.array('photos', 20), async (req, res, next) => {
   try {
-    const photos = (req.files || []).map((f) => `/uploads/${f.filename}`);
+    const photos = await db.uploadPhotos(req.files);
     const listing = await db.createListing({ ...req.body, photos });
     res.status(201).json({ listing });
   } catch (err) {
@@ -67,7 +67,7 @@ router.post('/listings/:id/photos', upload.array('photos', 20), async (req, res,
   try {
     const listing = await db.getListingById(req.params.id);
     if (!listing) return res.status(404).json({ error: 'Listing not found.' });
-    const newPhotos = (req.files || []).map((f) => `/uploads/${f.filename}`);
+    const newPhotos = await db.uploadPhotos(req.files);
     const updated = await db.updateListing(req.params.id, { photos: [...listing.photos, ...newPhotos] });
     res.json({ listing: updated });
   } catch (err) {
