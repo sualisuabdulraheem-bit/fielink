@@ -62,13 +62,14 @@ app.use((req, res) => {
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   console.error(err);
-  if (err.message && err.message.includes('Only JPG, PNG')) {
-    return res.status(400).json({ error: err.message });
-  }
   if (err.code === 'LIMIT_FILE_SIZE') {
     return res.status(400).json({ error: 'One of your photos is too large. Max 8MB per photo.' });
   }
-  res.status(500).json({ error: 'Something went wrong on our end. Please try again.' });
+  // Surfaces the real error message instead of a generic one. This is an
+  // admin-only tool, not a public-facing form, so showing the actual cause
+  // is more useful here than hiding it behind "something went wrong."
+  const message = (err && err.message) ? err.message : 'Something went wrong on our end. Please try again.';
+  res.status(500).json({ error: message });
 });
 
 app.listen(PORT, () => {
