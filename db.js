@@ -210,8 +210,15 @@ async function getAreaStats() {
 // ---------- Photo storage (Supabase Storage) ----------
 
 async function uploadPhotos(files) {
-  const urls = [];
-  for (const file of files || []) {
+  // Uploaded in parallel rather than one-at-a-time — with 8 photos, doing
+  // this sequentially means the client's connection has to stay alive for
+  // 8 consecutive round trips before it gets a response, which is a long
+  // window for a mobile connection to drop mid-request. Parallel uploads
+  // cut that window down to roughly the time of a single upload.
+  const uploadOne = async (file) => {
+    if (!file.buffer || file.buffer.length === 0) {
+      throw new Error(`Photo "${file.originalname}" arrived empty — please try uploading it again.`);
+    }
     const ext = (file.originalname.split('.').pop() || 'jpg').toLowerCase();
     const path = `${Date.now()}-${crypto.randomBytes(4).toString('hex')}.${ext}`;
     const { error } = await supabase.storage.from(PHOTOS_BUCKET).upload(path, file.buffer, {
@@ -220,9 +227,10 @@ async function uploadPhotos(files) {
     });
     if (error) throw error;
     const { data: pub } = supabase.storage.from(PHOTOS_BUCKET).getPublicUrl(path);
-    urls.push(pub.publicUrl);
-  }
-  return urls;
+    return pub.publicUrl;
+  };
+
+  return Promise.all((files || []).map(uploadOne));
 }
 
 // ---------- Leads (WhatsApp broadcast signups) ----------
