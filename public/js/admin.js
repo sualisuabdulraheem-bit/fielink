@@ -3,6 +3,68 @@ const API = '/api/v1/admin';
 let LISTINGS = [];
 let CURRENT_VERIFY_ID = null;
 
+// Photos coming straight off a phone camera are routinely 4-8MB each —
+// well past what Render's free tier can reliably accept in one request
+// (see https://community.render.com, multiple reports of uploads failing
+// above ~1-5MB). Every photo is resized and re-compressed in the browser
+// before it ever gets attached to the upload — this cuts a typical phone
+// photo down to a few hundred KB while staying sharp enough for a listing,
+// so 8 photos together land well under the limit instead of near it.
+const RESIZE_MAX_DIMENSION = 1280;
+const RESIZE_JPEG_QUALITY = 0.75;
+
+function resizeImageFile(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    img.onload = () => {
+      let { width, height } = img;
+      if (width > height && width > RESIZE_MAX_DIMENSION) {
+        height = Math.round((height * RESIZE_MAX_DIMENSION) / width);
+        width = RESIZE_MAX_DIMENSION;
+      } else if (height > RESIZE_MAX_DIMENSION) {
+        width = Math.round((width * RESIZE_MAX_DIMENSION) / height);
+        height = RESIZE_MAX_DIMENSION;
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+
+      canvas.toBlob(
+        (blob) => {
+          URL.revokeObjectURL(objectUrl);
+          if (!blob) return reject(new Error(`Could not process "${file.name}" — try a different photo.`));
+          const newName = file.name.replace(/\.[^.]+$/, '') + '.jpg';
+          resolve(new File([blob], newName, { type: 'image/jpeg' }));
+        },
+        'image/jpeg',
+        RESIZE_JPEG_QUALITY
+      );
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error(`"${file.name}" could not be read as an image — try re-selecting it.`));
+    };
+
+    img.src = objectUrl;
+  });
+}
+
+async function resizeImageFiles(fileList, onProgress) {
+  const files = Array.from(fileList);
+  const resized = [];
+  for (let i = 0; i < files.length; i++) {
+    if (onProgress) onProgress(i + 1, files.length);
+    resized.push(await resizeImageFile(files[i]));
+  }
+  return resized;
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   const sessionRes = await fetch('/api/v1/admin/session');
   const session = await sessionRes.json();
@@ -15,7 +77,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   loadReports();
 
   document.getElementById('f-photos').addEventListener('change', (e) => {
-    document.getElementById('photo-count').textContent = `${e.target.files.length} photo(s) selected ${e.target.files.length < 8 ? '— minimum 8 required to publish' : '✓'}`;
+    const n = e.target.files.length;
+    document.getElementById('photo-count').textContent = `${n} photo(s) selected ${n < 8 ? '— minimum 8 required to publish' : '✓'} (will be compressed automatically before upload)`;
   });
 });
 
@@ -104,7 +167,20 @@ function escapeHTML(str) {
 
 async function createListing(e) {
   e.preventDefault();
-  const photos = document.getElementById('f-photos').files;
+  const rawPhotos = document.getElementById('f-photos').files;
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+
+  let resizedPhotos;
+  try {
+    if (submitBtn) submitBtn.disabled = true;
+    resizedPhotos = await resizeImageFiles(rawPhotos, (i, total) => {
+      showToast(`Compressing photo ${i} of ${total}...`);
+    });
+  } catch (err) {
+    showToast(err.message, true);
+    if (submitBtn) submitBtn.disabled = false;
+    return false;
+  }
 
   const formData = new FormData();
   formData.append('title', document.getElementById('f-title').value);
@@ -118,9 +194,10 @@ async function createListing(e) {
   formData.append('landlordName', document.getElementById('f-landlord-name').value);
   formData.append('landlordWhatsapp', document.getElementById('f-landlord-whatsapp').value);
   formData.append('diasporaReady', document.getElementById('f-diaspora').checked);
-  for (const file of photos) formData.append('photos', file);
+  for (const file of resizedPhotos) formData.append('photos', file);
 
   try {
+    showToast('Uploading listing...');
     const res = await fetch(`${API}/listings`, { method: 'POST', body: formData });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Could not create listing.');
@@ -132,6 +209,8 @@ async function createListing(e) {
     setTimeout(() => openVerifyModal(data.listing.id), 300);
   } catch (err) {
     showToast(err.message, true);
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
   }
   return false;
 }
