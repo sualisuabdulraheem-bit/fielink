@@ -3,56 +3,77 @@ const API = '/api/v1/admin';
 let LISTINGS = [];
 let CURRENT_VERIFY_ID = null;
 
-// Photos coming straight off a phone camera are routinely 4-8MB each —
-// well past what Render's free tier can reliably accept in one request
-// (see https://community.render.com, multiple reports of uploads failing
-// above ~1-5MB). Every photo is resized and re-compressed in the browser
-// before it ever gets attached to the upload — this cuts a typical phone
-// photo down to a few hundred KB while staying sharp enough for a listing,
-// so 8 photos together land well under the limit instead of near it.
-const RESIZE_MAX_DIMENSION = 1280;
-const RESIZE_JPEG_QUALITY = 0.75;
+// Photos coming straight off a phone camera or downloaded from stock sites
+// are routinely 2-8MB each — well past what Render's free tier can reliably
+// accept in one request (see https://community.render.com, multiple reports
+// of uploads failing above ~1-5MB). Rather than compress at one fixed
+// setting — which isn't aggressive enough for every photo, since some
+// images (fine detail, complex textures, professional photography) resist
+// compression more than others — this compresses adaptively: it checks the
+// actual output size after each pass and keeps tightening the settings
+// until every single photo is guaranteed to land under the safety ceiling,
+// regardless of how complex the source image is.
+const RESIZE_TARGET_MAX_BYTES = 400 * 1024; // 400KB ceiling per photo
+const RESIZE_MAX_ATTEMPTS = 6;
+const RESIZE_MIN_DIMENSION = 640;
+const RESIZE_MIN_QUALITY = 0.4;
 
-function resizeImageFile(file) {
+function loadImageElement(file) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     const objectUrl = URL.createObjectURL(file);
+    img.onload = () => resolve({ img, objectUrl });
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error(`"${file.name}" could not be read as an image — try re-selecting it.`));
+    };
+    img.src = objectUrl;
+  });
+}
 
-    img.onload = () => {
+function canvasToBlob(canvas, quality) {
+  return new Promise((resolve) => {
+    canvas.toBlob((blob) => resolve(blob), 'image/jpeg', quality);
+  });
+}
+
+async function resizeImageFile(file) {
+  const { img, objectUrl } = await loadImageElement(file);
+  try {
+    let maxDim = 1280;
+    let quality = 0.75;
+    let blob = null;
+
+    for (let attempt = 0; attempt < RESIZE_MAX_ATTEMPTS; attempt++) {
       let { width, height } = img;
-      if (width > height && width > RESIZE_MAX_DIMENSION) {
-        height = Math.round((height * RESIZE_MAX_DIMENSION) / width);
-        width = RESIZE_MAX_DIMENSION;
-      } else if (height > RESIZE_MAX_DIMENSION) {
-        width = Math.round((width * RESIZE_MAX_DIMENSION) / height);
-        height = RESIZE_MAX_DIMENSION;
+      if (width > height && width > maxDim) {
+        height = Math.round((height * maxDim) / width);
+        width = maxDim;
+      } else if (height > maxDim) {
+        width = Math.round((width * maxDim) / height);
+        height = maxDim;
       }
 
       const canvas = document.createElement('canvas');
       canvas.width = width;
       canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, width, height);
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      blob = await canvasToBlob(canvas, quality);
 
-      canvas.toBlob(
-        (blob) => {
-          URL.revokeObjectURL(objectUrl);
-          if (!blob) return reject(new Error(`Could not process "${file.name}" — try a different photo.`));
-          const newName = file.name.replace(/\.[^.]+$/, '') + '.jpg';
-          resolve(new File([blob], newName, { type: 'image/jpeg' }));
-        },
-        'image/jpeg',
-        RESIZE_JPEG_QUALITY
-      );
-    };
+      if (!blob) throw new Error(`Could not process "${file.name}" — try a different photo.`);
 
-    img.onerror = () => {
-      URL.revokeObjectURL(objectUrl);
-      reject(new Error(`"${file.name}" could not be read as an image — try re-selecting it.`));
-    };
+      const reachedFloor = maxDim <= RESIZE_MIN_DIMENSION && quality <= RESIZE_MIN_QUALITY;
+      if (blob.size <= RESIZE_TARGET_MAX_BYTES || reachedFloor) break;
 
-    img.src = objectUrl;
-  });
+      quality = Math.max(RESIZE_MIN_QUALITY, quality - 0.15);
+      maxDim = Math.max(RESIZE_MIN_DIMENSION, Math.round(maxDim * 0.85));
+    }
+
+    const newName = file.name.replace(/\.[^.]+$/, '') + '.jpg';
+    return new File([blob], newName, { type: 'image/jpeg' });
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
 }
 
 async function resizeImageFiles(fileList, onProgress) {
