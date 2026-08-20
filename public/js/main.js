@@ -1,7 +1,7 @@
 // ===================== FieLink main.js =====================
 const API = '/api/v1';
 let WHATSAPP_NUMBER = '233000000000';
-const USD_RATE = 15.5; // approximate GHS -> USD, update periodically
+const USD_RATE = 11.7; // approximate GHS -> USD, updated 14 Aug 2026 — check xe.com every few months and refresh this
 
 let ALL_LISTINGS = [];
 let DIASPORA_MODE = false;
